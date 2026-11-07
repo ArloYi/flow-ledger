@@ -1,0 +1,17 @@
+.DS_Store
+__pycache__/
+*.pyc
+.data/
+*.sqlite*
+*.db
+*.log
+.env*
+dist/
+.build/
+local-archive/
+backups/
+*.app/
+.swift-cache/
+*.dmg
+*-Setup.exe
+*-portable.zip

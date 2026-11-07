@@ -1,0 +1,17 @@
+[
+  {
+    "name": "python-mac.tar.gz",
+    "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20261026/cpython-3.13.18%2B20261026-aarch64-apple-darwin-install_only.tar.gz",
+    "sha256": "e5af2fde6a937a0e0c795a0c595c4efb70578d57463a2657c819992b9b9acbac"
+  },
+  {
+    "name": "go.tar.gz",
+    "url": "https://go.dev/dl/go1.27.3.darwin-arm64.tar.gz",
+    "sha256": "dd3908cf20959d798c1e06ebe5b72213f0505ce01373b40ce3110975a6cd99c2"
+  },
+  {
+    "name": "python-win.zip",
+    "url": "https://www.python.org/ftp/python/3.13.17/python-3.13.17-embed-amd64.zip",
+    "sha256": "9e35319bffedab8b36ad44d8f377cb4f1733bcec257a0b6d04d94f01486ddb38"
+  }
+]

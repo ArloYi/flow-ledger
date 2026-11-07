@@ -1,0 +1,51 @@
+name: Build and validate
+on:
+  pull_request:
+  push:
+    branches: [main, 'codex/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  macos-core:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-python@v7.1.0
+        with:
+          python-version: '3.13'
+      - run: python scripts/test.py
+      - run: python scripts/privacy_scan.py . --source
+  windows-install:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-python@v7.1.0
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-go@v7.0.0
+        with:
+          go-version: '1.27.3'
+          cache: false
+      - run: python scripts/test.py
+      - run: python scripts/fetch_runtime.py windows --dest .build/runtime
+      - run: python scripts/build_windows.py --runtime .build/runtime --icon docs/icon.png
+      - name: Install, start bundled collector, uninstall
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $installer = Resolve-Path 'dist/FlowLedger-1.5.0-beta.1-Windows-x64-Setup.exe'
+          $errorLog = Join-Path $env:RUNNER_TEMP 'flow-ledger-setup-error.txt'
+          $p = Start-Process $installer -ArgumentList '--silent' -PassThru -Wait -RedirectStandardError $errorLog
+          if ($p.ExitCode -ne 0) { Get-Content $errorLog; throw "Installation failed: $($p.ExitCode)" }
+          $app = Join-Path $env:LOCALAPPDATA 'Programs/FlowLedger/FlowLedger.exe'
+          if (-not (Test-Path $app)) { throw 'Installed application missing' }
+          $p = Start-Process $app -ArgumentList '--self-test' -PassThru -Wait
+          if ($p.ExitCode -ne 0) { throw "Bundled runtime check failed: $($p.ExitCode)" }
+          $p = Start-Process $app -ArgumentList '--uninstall','--silent' -PassThru -Wait
+          if ($p.ExitCode -ne 0) { throw "Uninstall failed: $($p.ExitCode)" }
+          for ($i=0; $i -lt 30 -and (Test-Path $app); $i++) { Start-Sleep 1 }
+          if (Test-Path $app) { throw 'Uninstall did not remove the application' }
+      - run: python scripts/privacy_scan.py . --source
